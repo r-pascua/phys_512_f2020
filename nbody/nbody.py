@@ -63,7 +63,8 @@ class Mesh:
     def find_nearest_cell(self, position, rescale=False, guarded=False):
         scale = self.unit_length if rescale else 1
         size = self.half_size + self.Nguard if guarded else self.half_size
-        rescaled_position = position / scale + size
+        rescaled_position = np.floor(position / scale) + size
+        rescaled_position = np.fmin(rescaled_position, 2 * size - 1)
         return tuple(rescaled_position.astype(int))
 
 
@@ -190,6 +191,7 @@ class Nbody:
         self.history = {
             "position": self.particle_mesh.particles.position[None,...],
             "velocity": self.particle_mesh.particles.velocity[None,...],
+            "mass": self.particle_mesh.particles.mass[None,...],
             "energy": [self.particle_mesh.total_energy,],
         }
         self.info = {
@@ -200,18 +202,20 @@ class Nbody:
             "softening": softening,
             "timestep": timestep,
             "boundary_conditions": boundary_conditions,
+            "Npart": self.particle_mesh.particles.Npart,
+            "steps_completed": 0,
         }
         self.info_saved = False
 
 
     def run(self, oversample=10, dump_after=100, filename=None):
         # Run the simulation and write contents to history.
+        self.info["oversample"] = oversample
         Ndumps = 0
         for i in range(self.Nstep // oversample):
             print(f"{i * oversample} steps completed at {now()}")
             for j in range(oversample):
                 self.evolve()
-                self.apply_boundary_conditions()
             if filename is not None:
                 if i // dump_after != Ndumps:
                     print(Ndumps)
@@ -219,6 +223,7 @@ class Nbody:
                     Ndumps = i // dump_after
                     self.reset_history()
             self.update_history()
+            self.info["steps_completed"] += oversample
 
         if filename is not None:
             self.save(f"{filename}_{Ndumps + 1}")
@@ -237,6 +242,7 @@ class Nbody:
         self.particle_mesh.particles.position += (
             self.particle_mesh.particles.velocity * self.timestep
         )
+        self.apply_boundary_conditions()
         
         # Recalculate density/potential/acceleration/energy.
         self.particle_mesh.update()
@@ -253,12 +259,16 @@ class Nbody:
     def apply_boundary_conditions(self):
         # Find out if any of the particles are outside the simulation region.
         print(f"Starting to apply boundary conditions at {now()}")
-        particle_locations = np.array(self.particle_mesh.particle_locations)
-        Nguard = self.particle_mesh.mesh.Nguard
+        positions = self.particle_mesh.particles.position
         half_size = self.particle_mesh.mesh.half_size
-        ndim = self.particle_mesh.mesh.ndim
-        outside_left = particle_locations < Nguard
-        outside_right = particle_locations >= 2 * half_size + Nguard
+        unit_length = self.particle_mesh.mesh.unit_length
+        left_edge = -half_size * unit_length
+        right_edge = (half_size - 1) * unit_length
+        box_size = (
+            self.particle_mesh.mesh.half_size * self.particle_mesh.mesh.unit_length
+        )
+        outside_left = positions < left_edge
+        outside_right = positions > right_edge
         apply_bcs = np.any(outside_left) or np.any(outside_right)
 
         # If none of the particles have left the region, then there's nothing to do.
@@ -266,16 +276,14 @@ class Nbody:
             print(f"No boundary conditions to enforce. {now()}")
             return
 
-        x_slice = [0,] * ndim
-        x_slice[0] = slice(None)
-        x_slice = tuple(x_slice)
-        x_slice = self.particle_mesh.mesh.get_grid(
-            rescale=True, guarded=True
-        )[0][x_slice]
-        left_edge = x_slice[Nguard]
-        right_edge = x_slice[-Nguard-1]
-        self.particle_mesh.particles.position[outside_left] = right_edge
-        self.particle_mesh.particles.position[outside_right] = left_edge
+        if self.boundary_conditions == "periodic":
+            self.particle_mesh.particles.position[outside_left] = right_edge
+            self.particle_mesh.particles.position[outside_right] = left_edge
+        else:
+            problem_particles = np.any(outside_left, axis=1) | np.any(outside_right, axis=1)
+            self.particle_mesh.particles.mass[problem_particles] = 0
+            self.particle_mesh.particles.position[problem_particles] = 0
+            self.particle_mesh.particles.velocity[problem_particles] = 0
 
         print(f"Boundary conditions applied at {now()}")
         # Since we modified some positions or masses, we need to recalculate things.
@@ -289,6 +297,10 @@ class Nbody:
         )
         self.history["velocity"] = np.concatenate(
             [self.history["velocity"], self.particle_mesh.particles.velocity[None,...]],
+            axis=0,
+        )
+        self.history["mass"] = np.concatenate(
+            [self.history["mass"], self.particle_mesh.particles.mass[None,...]],
             axis=0,
         )
         self.history["energy"].append(self.particle_mesh.total_energy)
