@@ -213,9 +213,9 @@ class Nbody:
         self.info["oversample"] = oversample
         Ndumps = 0
         for i in range(self.Nstep // oversample):
-            print(f"{i * oversample} steps completed at {now()}")
             for j in range(oversample):
                 self.evolve()
+                print(f"{i * oversample + j} steps completed at {now()}")
             if filename is not None:
                 if i // dump_after != Ndumps:
                     print(Ndumps)
@@ -315,7 +315,7 @@ class Nbody:
     def save(self, filename):
         np.savez(filename, **self.history)
         if not self.info_saved:
-            with open(f"{filename}_info.json", "w") as fp:
+            with open(f"{filename[:-2]}_info.json", "w") as fp:
                 json.dump(self.info, fp)
             self.info_saved = True
 
