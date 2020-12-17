@@ -64,7 +64,7 @@ if __name__=="__main__":
         boundary_conditions = "periodic"
         # Generate a density field from a scale-invariant power spectrum realization.
         k_modes = 2 * np.pi * np.fft.fftfreq(2 * grid_half_size, unit_length)
-        k_mode_mesh = np.array(np.meshgrid([inds,] * ndim, indexing="ij"))
+        k_mode_mesh = np.array(np.meshgrid([k_modes,] * ndim, indexing="ij"))
         k_mode_amps = np.linalg.norm(k_mode_mesh, axis=0)
         power = np.zeros((2 * grid_half_size,) * ndim, dtype=np.float)
         power[k_mode_amps > 0] = k_mode_amps[k_mode_amps > 0] ** -ndim
