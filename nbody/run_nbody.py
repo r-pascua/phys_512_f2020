@@ -1,4 +1,5 @@
 import glob
+import os
 import sys
 from datetime import datetime as dt
 
@@ -48,7 +49,8 @@ if __name__=="__main__":
         velocities = np.array([v0, -v0])
         C = 0.05
         timestep = C * unit_length / (radius * omega)
-        Nstep = 2 * int(np.ceil(2 * np.pi / (timestep * omega)))
+        Norbit = 10
+        Nstep = Norbit * int(np.ceil(2 * np.pi / (timestep * omega)))
         save_dir = "./part_2"
     elif part.lower() in ("3a", "3b"):
         boundary_conditions = "nonperiodic" if part.lower() == "3a" else "periodic"
@@ -98,15 +100,17 @@ if __name__=="__main__":
         save_dir = "./part_4"
 
     existing_simulation_files = sorted(
-        glob.glob(f"{save_dir}/*.npz"), key=lambda f: int(f[-7])
+        glob.glob(os.path.join(save_dir, "*.npz")),
+        key=lambda f: int(f[f.index("_")+1]),
     )
     if existing_simulation_files:
-        simulation_number = existing_simulation_files[-1][-7]
+        index = existing_simulation_files[-1].index("_") + 1
+        simulation_number = existing_simulation_files[-1][index]
     else:
         simulation_number = 0
     oversample = 10
     dump_after = 10
-    filename = f"{save_dir}/simulation_{simulation_number}"
+    filename = os.path.join(save_dir, f"simulation_{simulation_number}")
     print("Setting up simulation...")
     nbody = nbody.Nbody(
         positions,
