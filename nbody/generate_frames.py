@@ -9,7 +9,13 @@ import matplotlib.pyplot as plt
 
 
 def make_plot(
-    masked_positions, box_size, times=None, energy=None, Emin=None, Emax=None
+    masked_positions,
+    box_size,
+    times=None,
+    energy=None,
+    Emin=None,
+    Emax=None,
+    ms=0.001,
 ):
     corners = get_corners(box_size)
 
@@ -26,7 +32,7 @@ def make_plot(
             ax.remove()
         box = fig.add_subplot(spec[:-1,0], projection="3d")
         box = plot_box_edges(box, corners)
-        box.scatter(*masked_positions.T, marker="o", s=0.001)
+        box.scatter(*masked_positions.T, marker="o", s=ms)
         if Emin is not None and Emax is not None:
             axes[-1].set_ylim(Emin, Emax)
         axes[-1].plot(times, energy)
@@ -72,6 +78,11 @@ if __name__=="__main__":
     except IndexError:
         destination = data_path
 
+    try:
+        ms = float(sys.argv[-1])
+    except TypeError:
+        ms = 0.001
+
     # Load the data and simulation info.
     frame_number = 0
     with open(f"{os.path.join(data_path, basename)}_info.json", "r") as f:
@@ -113,6 +124,7 @@ if __name__=="__main__":
                 energy[:frame_number],
                 energy.min(),
                 energy.max(),
+                ms,
             )
             fig.savefig(
                 f"{os.path.join(destination, basename)}_frame_{frame_number}.png",
