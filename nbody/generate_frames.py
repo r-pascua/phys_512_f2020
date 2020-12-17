@@ -109,8 +109,8 @@ if __name__=="__main__":
             fig = make_plot(
                 masked_positions[i],
                 box_size,
-                time[:i],
-                energy[:i],
+                time[:frame_number],
+                energy[:frame_number],
                 energy.min(),
                 energy.max(),
             )
