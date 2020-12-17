@@ -218,7 +218,6 @@ class Nbody:
                 print(f"{i * oversample + j} steps completed at {now()}")
             if filename is not None:
                 if i // dump_after != Ndumps:
-                    print(Ndumps)
                     self.save(f"{filename}_{Ndumps}")
                     Ndumps = i // dump_after
                     self.reset_history()
