@@ -80,7 +80,7 @@ if __name__=="__main__":
 
     try:
         ms = float(sys.argv[-1])
-    except TypeError:
+    except ValueError:
         ms = 0.001
 
     # Load the data and simulation info.
