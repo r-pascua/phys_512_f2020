@@ -18,7 +18,7 @@ if __name__=="__main__":
     unit_length = grid_length / grid_half_size
     soften_scale = 3
     softening = soften_scale * unit_length
-    if part == 1:
+    if part == "1":
         boundary_conditions = None
         masses = 1
         positions = np.zeros((1, ndim), dtype=np.float)
@@ -26,7 +26,7 @@ if __name__=="__main__":
         timestep = 0.1
         Nstep = 100
         save_dir = "./part_1"
-    elif part == 2:
+    elif part == "2":
         boundary_conditions = None
         masses = 1
         theta = np.random.uniform(-np.pi / 2, np.pi / 2)
@@ -87,7 +87,7 @@ if __name__=="__main__":
         )
         indices = np.indices(cell_centers[0].shape)
         indices = list(zip(*[indices[i].flat for i in range(ndim)]))
-        masses = np.array([density[inds] for inds in indices])
+        masses = np.array(list(density[inds] for inds in indices))
         positions = np.array(list(zip(*[cell_centers[i].flat for i in range(ndim)])))
         velocities = np.zeros_like(positions)
         timestep = 0.00001
