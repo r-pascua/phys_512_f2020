@@ -95,7 +95,7 @@ if __name__=="__main__":
         masses = np.array(list(density[inds] for inds in indices))
         positions = np.array(list(zip(*[cell_centers[i].flat for i in range(ndim)])))
         velocities = np.zeros_like(positions)
-        timestep = 0.00001
+        timestep = 0.00005
         Nstep = 10000
         save_dir = "./part_4"
 
