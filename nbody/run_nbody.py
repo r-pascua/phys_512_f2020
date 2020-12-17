@@ -47,10 +47,9 @@ if __name__=="__main__":
         positions = np.array([r0, -r0])
         velocities = np.array([v0, -v0])
         C = 0.05
-        timestep = radius * omega / (C * unit_length)
+        timestep = C * unit_length / (radius * omega)
         Nstep = 2 * int(np.ceil(2 * np.pi / (timestep * omega)))
         save_dir = "./part_2"
-        print(Nstep)
     elif part.lower() in ("3a", "3b"):
         boundary_conditions = "nonperiodic" if part.lower() == "3a" else "periodic"
         Npart = 300000
@@ -62,6 +61,10 @@ if __name__=="__main__":
         save_dir = "./part_3/{boundary_conditions}"
     else:
         boundary_conditions = "periodic"
+        grid_half_size = 30  # For ~200,000 particles
+        unit_length = grid_length / grid_half_size
+        soften_scale = 3
+        softening = soften_scale * unit_length
         # Generate a density field from a scale-invariant power spectrum realization.
         k_modes = 2 * np.pi * np.fft.fftfreq(2 * grid_half_size, unit_length)
         k_mode_mesh = np.array(np.meshgrid(*[k_modes,] * ndim, indexing="ij"))
@@ -76,7 +79,7 @@ if __name__=="__main__":
         )
         # Place particles at cell centers, then assign masses according to density.
         mesh = nbody.Mesh(grid_half_size, ndim, unit_length, Nguard)
-        grid = mesh.get_grid(rescale=False, guarded=False)
+        grid = mesh.get_grid(rescale=True, guarded=False)
         left_slice = (slice(None,-1),) * ndim
         right_slice = (slice(1,None),) * ndim
         cell_centers = np.array(
