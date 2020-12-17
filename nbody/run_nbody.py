@@ -60,7 +60,7 @@ if __name__=="__main__":
         velocities = np.zeros((Npart, ndim), dtype=np.float)
         timestep = 0.00001
         Nstep = 10000
-        save_dir = "./part_3/{boundary_conditions}"
+        save_dir = f"./part_3/{boundary_conditions}"
     else:
         boundary_conditions = "periodic"
         grid_half_size = 30  # For ~200,000 particles
