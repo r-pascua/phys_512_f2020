@@ -4,6 +4,10 @@ import sys
 from PIL import Image
 
 directory = sys.argv[1]
+try:
+    time_per_frame = float(sys.argv[2])
+except (IndexError, ValueError):
+    time_per_frame = 5
 files = glob.glob(os.path.join(directory, "*.png"))
 files = sorted(files, key=lambda f: int(f[f.rindex("_")+1:-4]))
 frames = []
@@ -15,6 +19,6 @@ frames[0].save(
     format="GIF",
     append_images=frames[1:],
     save_all=True,
-    duration=len(files),
+    duration=time_per_frame * len(files),
     loop=0
 )
