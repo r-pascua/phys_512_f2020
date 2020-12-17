@@ -70,7 +70,7 @@ if __name__=="__main__":
     try:
         destination = sys.argv[2]
     except IndexError:
-        destination = "./"
+        destination = data_path
 
     # Load the data and simulation info.
     frame_number = 0
