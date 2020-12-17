@@ -58,8 +58,8 @@ if __name__=="__main__":
         masses = 1
         positions = np.random.uniform(-grid_length, grid_length, (Npart, ndim))
         velocities = np.zeros((Npart, ndim), dtype=np.float)
-        timestep = 0.00001
-        Nstep = 10000
+        timestep = 0.000005
+        Nstep = 100000
         save_dir = f"./part_3/{boundary_conditions}"
     else:
         boundary_conditions = "periodic"
@@ -108,7 +108,7 @@ if __name__=="__main__":
         simulation_number = existing_simulation_files[-1][index]
     else:
         simulation_number = 0
-    oversample = 10
+    oversample = 20
     dump_after = 10
     filename = os.path.join(save_dir, f"simulation_{simulation_number}")
     print("Setting up simulation...")
