@@ -64,7 +64,7 @@ if __name__=="__main__":
         boundary_conditions = "periodic"
         # Generate a density field from a scale-invariant power spectrum realization.
         k_modes = 2 * np.pi * np.fft.fftfreq(2 * grid_half_size, unit_length)
-        k_mode_mesh = np.array(np.meshgrid([k_modes,] * ndim, indexing="ij"))
+        k_mode_mesh = np.array(np.meshgrid(*[k_modes,] * ndim, indexing="ij"))
         k_mode_amps = np.linalg.norm(k_mode_mesh, axis=0)
         power = np.zeros((2 * grid_half_size,) * ndim, dtype=np.float)
         power[k_mode_amps > 0] = k_mode_amps[k_mode_amps > 0] ** -ndim
@@ -88,7 +88,7 @@ if __name__=="__main__":
         indices = np.indices(cell_centers[0].shape)
         indices = list(zip(*[indices[i].flat for i in range(ndim)]))
         masses = np.array([density[inds] for inds in indices])
-        positions = np.array([zip(*[cell_centers[i].flat for i in range(ndim)])])
+        positions = np.array(list(zip(*[cell_centers[i].flat for i in range(ndim)])))
         velocities = np.zeros_like(positions)
         timestep = 0.00001
         Nstep = 10000
