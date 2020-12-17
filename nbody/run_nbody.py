@@ -24,7 +24,7 @@ if __name__=="__main__":
         positions = np.zeros((1, ndim), dtype=np.float)
         velocities = np.zeros_like(positions)
         timestep = 0.1
-        Nstep = 100
+        Nstep = 5000
         save_dir = "./part_1"
     elif part == "2":
         boundary_conditions = None
