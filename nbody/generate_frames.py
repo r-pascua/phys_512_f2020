@@ -71,7 +71,8 @@ def get_corners(box_size):
 if __name__=="__main__":
     data_path, basename = os.path.split(sys.argv[1])
     filenames = sorted(
-        glob.glob(f"{os.path.join(data_path, basename)}_?.npz")
+        glob.glob(f"{os.path.join(data_path, basename)}*.npz"),
+        key=lambda f: int(f[f.rindex("_")+1:-4]),
     )
     try:
         destination = sys.argv[2]
