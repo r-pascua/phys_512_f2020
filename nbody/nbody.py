@@ -308,6 +308,7 @@ class Nbody:
     def reset_history(self):
         self.history["position"] = self.particle_mesh.particles.position[None,...]
         self.history["velocity"] = self.particle_mesh.particles.velocity[None,...]
+        self.history["mass"] = self.particle_mesh.particles.mass[None,...]
         self.history["energy"] = [self.particle_mesh.total_energy]
 
 
