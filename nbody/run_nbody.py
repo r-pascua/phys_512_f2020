@@ -96,7 +96,7 @@ if __name__=="__main__":
         positions = np.array(list(zip(*[cell_centers[i].flat for i in range(ndim)])))
         velocities = np.zeros_like(positions)
         timestep = 0.00005
-        Nstep = 10000
+        Nstep = 20000
         save_dir = "./part_4"
 
     existing_simulation_files = sorted(
