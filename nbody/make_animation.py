@@ -12,10 +12,14 @@ try:
     skip_frames = int(sys.argv[3])
 except IndexError:
     skip_frames = 1
+try:
+    Nframes = int(sys.argv[4])
+except IndexError:
+    Nframes = -1
 files = glob.glob(os.path.join(directory, "*.png"))
 files = sorted(files, key=lambda f: int(f[f.rindex("_")+1:-4]))
 frames = []
-for fn in files[::skip_frames]:
+for fn in files[:Nframes:skip_frames]:
     frames.append(Image.open(fn))
 
 frames[0].save(
