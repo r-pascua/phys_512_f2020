@@ -1,0 +1,89 @@
+Overview
+--------
+For this project, we use a particle mesh to simulate the evolution of a
+system of particles under gravity. My implementation uses classes to manage
+just about everything, though the gradient of the potential is calculated
+using a function defined outside the scope of any of the classes developed.
+The simulation is managed by an Nbody object, which just adds some extra
+features to my ParticleMesh class. The ParticleMesh class has a Particles
+object and a Mesh object as attributes, and provides methods for calculating
+the potential given the mesh and the particle properties, as well as other
+useful things (like finding the nearest cell to a particle in the mesh).
+I *think* the code is optimized rather well, though there are certainly
+improvements that can be made. As an example, I imagine the FFTs could
+probably be implemented on a GPU to make for faster calculations. The code
+for the N-body simulation all lives in the ``nbody.py`` script. A simulation
+can be run by using the ``run_nbody.py`` script. Currently the settings are
+hard-coded, but it's possible to modify the script to parse a configuration
+file (e.g. using ``pyyaml`` or something). Frames of the particles in the
+simulation box, optionally with plots of the total energy, can be constructed
+using the ``generate_frames.py`` script. Frames can be spliced together to
+form an animated GIF using the ``make_animation.py`` script. Documentation is
+sparse at the moment, but the code should be pretty readable.
+
+Part 1
+------
+This part is pretty simple. Just choose an appropriate softening scale,
+and the particle never accelerates.
+
+Part 2
+------
+For this part, we needed to be a little careful to make sure that we
+actually start the particles in a circular orbit (i.e. choose the
+angular velocity appropriately given the size of the orbit). I just did
+a 2-particle system of particles with equal mass to keep figuring out
+the initial conditions simple. The particles execute the circular orbit
+as expected, and the total energy is conserved (there are slight fluctuations,
+but nothing major--just small oscillations about the expected energy).
+
+Part 3
+------
+For this part, I randomly placed some 300,000 particles in the simulation
+box, each at rest, and each with the same mass as every other particle. One
+simulation used periodic boundary conditions (particles get pushed from one
+face of the cube to the opposite face if they cross the face), while the other
+effectively deleted particles that passed through a face of the cube (this was
+done with a little hack by setting the particle mass to zero and moving it to
+be at rest at the center of the box). Both simulations collapse in the same
+way, producing spine-like structures protruding radially outward before
+executing a seemingly explosive type maneuver as some particles are launched
+outward. Both simulations also end up virializing rather quickly, with the
+size of the cluster being larger for the periodic simulation (simply because
+particles aren't lost, I think). I think that I may need to fine-tune the
+parameters used to get at more interesting behavior, in particular I think
+it would be interesting to increase the time resolution so that the collapse
+and bounce-back can be studied in greater detail, with less particles being
+ejected due to numerical artifacts (the potential is softened, but apparently
+some particles still receive rather large kicks at the most climactic moment
+of the collapse).
+
+Part 4
+------
+For this part, we initialize a distribution of particles with masses drawn in
+a way that gives a scale-invariant power spectrum, then let the system evolve
+under periodic boundary conditions. The only difference between this part and
+the previous part is that the initial conditions take a bit more work here. In
+order to generate a realization of the power spectrum, I followed the steps in
+https://garrettgoon.com/gaussian-fields/ (modified for python). I wrote the
+code somewhat generally in the sense that it should generate a scale-invariant
+power spectrum for whatever number of dimensions is chosen for the simulation.
+Anyway, drawing a realization from this distribution yields a density field on
+the mesh, so the simplest way to translate this into initial conditions for the
+particles is to place the particles in the centers of cells, and just make the
+mass of a particle in a given cell equal to the density in that cell. (I do
+*not* fuss over factors of the cell volume here--these factors cancel with
+the measure one would have to manually attach to a FFT.) The results of this
+simulation are interesting in the short term: instead of collapsing with the
+radial symmetry seen in the previous part, more filamentary structures are
+formed in the collapse process. The long-term behavior of this simulation is
+basically the same as for the previous part, though: the system eventually
+virializes and we get a swarm of particles in the end. The energy seems to be
+roughly constant long into the system's evolution, though there is a strong dip
+seen during collapse that is also present in the previous simulation. I suspect
+that this is due to the integration step size being too large so that some
+particles get kicked harder than they would be physically. I am currently
+re-running the simulation with a smaller step size, but results won't be in
+until after the submission deadline (for the grid size (60x60x60) and the
+number of particles (~200,000) used here, it takes about 5 seconds per step,
+so I need the better half of a day to get to the interesting part of the
+collapse).
